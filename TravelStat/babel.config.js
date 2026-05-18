@@ -16,7 +16,7 @@ module.exports = function (api) {
           alias: { '@': './src' },
         },
       ],
-      ...(isTest ? [] : ['react-native-reanimated/plugin']),
+      ...(isTest ? [] : ['react-native-worklets/plugin']),
     ],
   };
 };
