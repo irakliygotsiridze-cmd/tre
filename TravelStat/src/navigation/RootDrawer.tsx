@@ -7,7 +7,6 @@ import TimelineStack from '@/navigation/TimelineStack';
 import StatisticsScreen from '@/screens/StatisticsScreen';
 import AchievementsScreen from '@/screens/AchievementsScreen';
 import SettingsScreen from '@/screens/SettingsScreen';
-import DebugScreen from '@/screens/DebugScreen';
 
 const Drawer = createDrawerNavigator();
 
@@ -27,7 +26,6 @@ export default function RootDrawer() {
       <Drawer.Screen name="Statistics"   component={StatisticsScreen}   options={{ drawerIcon: icon('chart-bar') }} />
       <Drawer.Screen name="Achievements" component={AchievementsScreen} options={{ drawerIcon: icon('trophy-outline') }} />
       <Drawer.Screen name="Settings"     component={SettingsScreen}     options={{ drawerIcon: icon('cog-outline') }} />
-      <Drawer.Screen name="Debug"        component={DebugScreen}        options={{ drawerIcon: icon('bug') }} />
     </Drawer.Navigator>
   );
 }
