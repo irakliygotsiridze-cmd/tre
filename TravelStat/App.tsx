@@ -31,6 +31,8 @@ export default function App() {
           useAchievementsStore.getState().loadFromDb(),
           useSettingsStore.getState().loadFromDb(),
         ]);
+        const byCity = useMediaStore.getState().byCity;
+        useCitiesStore.getState().setWithMedia(new Set(byCity.keys()));
         setReady(true);
       } catch (e: any) {
         setError(String(e?.message ?? e));
