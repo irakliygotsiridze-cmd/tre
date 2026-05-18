@@ -1,7 +1,7 @@
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import HomeScreen from '@/screens/HomeScreen';
-import MapScreen from '@/screens/MapScreen';
+import MapStack from '@/navigation/MapStack';
 import WishlistScreen from '@/screens/WishlistScreen';
 import TimelineScreen from '@/screens/TimelineScreen';
 import StatisticsScreen from '@/screens/StatisticsScreen';
@@ -21,7 +21,7 @@ export default function RootDrawer() {
   return (
     <Drawer.Navigator initialRouteName="Home">
       <Drawer.Screen name="Home"         component={HomeScreen}         options={{ drawerIcon: icon('home') }} />
-      <Drawer.Screen name="Map"          component={MapScreen}          options={{ drawerIcon: icon('map') }} />
+      <Drawer.Screen name="Map"          component={MapStack}           options={{ drawerIcon: icon('map') }} />
       <Drawer.Screen name="Wishlist"     component={WishlistScreen}     options={{ drawerIcon: icon('heart-outline') }} />
       <Drawer.Screen name="Timeline"     component={TimelineScreen}     options={{ drawerIcon: icon('timeline') }} />
       <Drawer.Screen name="Statistics"   component={StatisticsScreen}   options={{ drawerIcon: icon('chart-bar') }} />
