@@ -1,0 +1,13 @@
+{
+  "name": "travelstat-scripts",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build:data": "ts-node --project tsconfig.scripts.json scripts/build-data.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.0"
+  }
+}
