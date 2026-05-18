@@ -12,9 +12,9 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
-    "@react-navigation/drawer": "^6.6.15",
-    "@react-navigation/native": "^6.1.17",
-    "@react-navigation/stack": "^6.3.29",
+    "@react-navigation/drawer": "^7.10.2",
+    "@react-navigation/native": "^7.2.4",
+    "@react-navigation/stack": "^7.9.2",
     "date-fns": "^3.6.0",
     "expo": "~54.0.33",
     "expo-constants": "~18.0.13",
