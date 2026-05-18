@@ -1,0 +1,4 @@
+scripts/
+tsconfig.scripts.json
+.travelstat-tmp/
+docs/
