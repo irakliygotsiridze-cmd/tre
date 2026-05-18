@@ -1,0 +1,77 @@
+name: Release Android APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to build (e.g. v1.0.0)'
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref_name }}
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install deps
+        working-directory: TravelStat
+        run: npm install --legacy-peer-deps
+
+      - name: EAS build (Android preview APK)
+        working-directory: TravelStat
+        run: |
+          eas build \
+            --platform android \
+            --profile preview \
+            --non-interactive \
+            --wait \
+            --json > build.json
+          cat build.json
+
+      - name: Download APK from EAS
+        working-directory: TravelStat
+        run: |
+          URL=$(jq -r '.[0].artifacts.buildUrl' build.json)
+          if [ -z "$URL" ] || [ "$URL" = "null" ]; then
+            echo "::error::Build URL not found in EAS response"
+            exit 1
+          fi
+          TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          curl -L -o "travelstat-${TAG}.apk" "$URL"
+          ls -la "travelstat-${TAG}.apk"
+
+      - name: Create/update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          name: TravelStat ${{ github.event.inputs.tag || github.ref_name }}
+          body: |
+            Automated APK build for tag ${{ github.event.inputs.tag || github.ref_name }}.
+
+            Install on Android: download the `.apk` below and allow install from unknown sources.
+
+            See the [implementation plan](docs/superpowers/plans/2026-05-18-travelstat-implementation.md) and [design spec](docs/superpowers/specs/2026-05-18-travelstat-design.md) for what's in this release.
+          files: TravelStat/travelstat-*.apk
+          draft: false
+          prerelease: ${{ !startsWith(github.event.inputs.tag || github.ref_name, 'v1.') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
