@@ -17,10 +17,11 @@ export default function MapScreen() {
   const nav = useNavigation<Nav>();
 
   const onCountryPress = async (iso: IsoCode) => {
-    await markCountryVisited(iso);
+    const unlocked = await markCountryVisited(iso);
     const name = byCode[iso]?.name ?? iso;
     const visited = useCountriesStore.getState().visited.has(iso);
-    setMsg(visited ? `Marked ${name} visited ✓` : `Unmarked ${name}`);
+    if (unlocked.length > 0) setMsg(`🏆 Achievement: ${unlocked[0]}`);
+    else setMsg(visited ? `Marked ${name} visited ✓` : `Unmarked ${name}`);
   };
 
   const onCityPress = (id: CityId) => nav.navigate('CityDetail', { id });

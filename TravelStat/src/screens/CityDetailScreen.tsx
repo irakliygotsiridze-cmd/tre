@@ -43,7 +43,7 @@ export default function CityDetailScreen({ route }: Props) {
       </Text>
       <View style={s.row}>
         <Text>Visited</Text>
-        <Switch value={visited} onValueChange={() => markCityVisited(id)} />
+        <Switch value={visited} onValueChange={() => { markCityVisited(id); }} />
       </View>
       <View style={s.row}>
         <Text variant="titleMedium">Media ({mediaForCity.length})</Text>

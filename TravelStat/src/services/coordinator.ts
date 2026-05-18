@@ -2,18 +2,36 @@ import { useCountriesStore } from '@/store/useCountriesStore';
 import { useCitiesStore } from '@/store/useCitiesStore';
 import { useVisitsStore } from '@/store/useVisitsStore';
 import { useMediaStore } from '@/store/useMediaStore';
+import { useAchievementsStore } from '@/store/useAchievementsStore';
 import type { IsoCode, CityId, NewVisit } from '@/utils/types';
 import { pickAndCopy } from './media';
+import { buildSnapshot, newlyUnlocked } from './achievements';
 
-export async function markCountryVisited(iso: IsoCode): Promise<void> {
+export async function evaluateAchievements(): Promise<string[]> {
+  const cs = useCountriesStore.getState();
+  const ci = useCitiesStore.getState();
+  const ac = useAchievementsStore.getState();
+  const snap = buildSnapshot({
+    countriesVisited: cs.visited,
+    citiesVisited: ci.visited,
+    byCode: cs.byCode,
+  });
+  const ids = newlyUnlocked(snap, ac.byId);
+  for (const id of ids) await ac.unlock(id);
+  return ids;
+}
+
+export async function markCountryVisited(iso: IsoCode): Promise<string[]> {
   await useCountriesStore.getState().toggleVisited(iso);
+  return evaluateAchievements();
 }
 
-export async function markCityVisited(id: CityId): Promise<void> {
+export async function markCityVisited(id: CityId): Promise<string[]> {
   await useCitiesStore.getState().toggleVisited(id);
+  return evaluateAchievements();
 }
 
-export async function recordVisit(input: NewVisit): Promise<void> {
+export async function recordVisit(input: NewVisit): Promise<string[]> {
   await useVisitsStore.getState().addVisit(input);
   if (!useCountriesStore.getState().visited.has(input.country_code)) {
     await useCountriesStore.getState().toggleVisited(input.country_code);
@@ -21,6 +39,7 @@ export async function recordVisit(input: NewVisit): Promise<void> {
   if (input.city_id && !useCitiesStore.getState().visited.has(input.city_id)) {
     await useCitiesStore.getState().toggleVisited(input.city_id);
   }
+  return evaluateAchievements();
 }
 
 export async function attachMediaToCity(cityId: CityId): Promise<boolean> {
