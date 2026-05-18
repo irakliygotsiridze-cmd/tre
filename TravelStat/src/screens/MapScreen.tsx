@@ -1,11 +1,5 @@
-import { View } from 'react-native';
-import { Text, useTheme } from 'react-native-paper';
+import WorldMap from '@/map/WorldMap';
 
 export default function MapScreen() {
-  const theme = useTheme();
-  return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.background }}>
-      <Text variant="headlineMedium">Map</Text>
-    </View>
-  );
+  return <WorldMap onCountryPress={(iso) => console.log('tapped country', iso)} />;
 }
