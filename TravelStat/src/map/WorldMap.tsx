@@ -1,18 +1,22 @@
 import { Platform, StyleSheet } from 'react-native';
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
+import { useEffect } from 'react';
 import { useViewport } from './useViewport';
 import CountryLayer from './CountryLayer';
 import CityLayer from './CityLayer';
-import { CITY_VISIBLE_DELTA } from './viewport';
 import type { IsoCode, CityId } from '@/utils/types';
 
 interface Props {
   onCountryPress: (iso: IsoCode) => void;
   onCityPress: (id: CityId) => void;
+  onReady?: (api: { flyTo: (lat: number, lng: number, delta?: number) => void }) => void;
 }
 
-export default function WorldMap({ onCountryPress, onCityPress }: Props) {
-  const { initial, mapRef, region, onRegionChangeComplete } = useViewport();
+export default function WorldMap({ onCountryPress, onCityPress, onReady }: Props) {
+  const { initial, mapRef, onRegionChangeComplete, flyTo } = useViewport();
+
+  useEffect(() => { onReady?.({ flyTo }); }, [flyTo, onReady]);
+
   return (
     <MapView
       ref={mapRef}
@@ -25,9 +29,7 @@ export default function WorldMap({ onCountryPress, onCityPress }: Props) {
       showsBuildings={false}
     >
       <CountryLayer onCountryPress={onCountryPress} />
-      {region.latitudeDelta < CITY_VISIBLE_DELTA && (
-        <CityLayer region={region} onCityPress={onCityPress} />
-      )}
+      <CityLayer onCityPress={onCityPress} />
     </MapView>
   );
 }

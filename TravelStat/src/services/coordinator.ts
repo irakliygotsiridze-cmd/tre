@@ -27,7 +27,19 @@ export async function markCountryVisited(iso: IsoCode): Promise<string[]> {
 }
 
 export async function markCityVisited(id: CityId): Promise<string[]> {
-  await useCitiesStore.getState().toggleVisited(id);
+  const ci = useCitiesStore.getState();
+  const wasVisited = ci.visited.has(id);
+  await ci.toggleVisited(id);
+  // If we just marked as visited (not unmarked), also ensure the country is visited.
+  if (!wasVisited) {
+    const city = ci.byId.get(id);
+    if (city) {
+      const cs = useCountriesStore.getState();
+      if (!cs.visited.has(city.country)) {
+        await cs.toggleVisited(city.country);
+      }
+    }
+  }
   return evaluateAchievements();
 }
 

@@ -1,33 +1,45 @@
-import { useMemo } from 'react';
 import { Marker } from 'react-native-maps';
 import { useCitiesStore } from '@/store/useCitiesStore';
-import { visibleCities, type Region } from './viewport';
 import type { CityId } from '@/utils/types';
 
 interface Props {
-  region: Region;
   onCityPress: (id: CityId) => void;
 }
 
-export default function CityLayer({ region, onCityPress }: Props) {
+export default function CityLayer({ onCityPress }: Props) {
   const all = useCitiesStore(s => s.all);
   const visited = useCitiesStore(s => s.visited);
+  const wishlist = useCitiesStore(s => s.wishlist);
   const withMedia = useCitiesStore(s => s.withMedia);
+  const byId = useCitiesStore(s => s.byId);
 
-  const cities = useMemo(
-    () => visibleCities(all, region, visited, withMedia),
-    [all, region, visited, withMedia],
-  );
+  // Show: visited (red/gold) + wishlist (blue) — at any zoom level.
+  const ids = new Set<CityId>();
+  for (const id of visited) ids.add(id);
+  for (const id of wishlist) ids.add(id);
+
+  const markers: { id: CityId; lat: number; lng: number; color: 'red' | 'gold' | 'blue' | undefined; title: string }[] = [];
+  for (const id of ids) {
+    const c = byId.get(id);
+    if (!c) continue;
+    let color: 'red' | 'gold' | 'blue' | undefined;
+    if (visited.has(id)) {
+      color = withMedia.has(id) ? 'gold' : 'red';
+    } else if (wishlist.has(id)) {
+      color = 'blue';
+    }
+    markers.push({ id, lat: c.lat, lng: c.lng, color, title: c.name });
+  }
 
   return (
     <>
-      {cities.map(c => (
+      {markers.map(m => (
         <Marker
-          key={c.id}
-          coordinate={{ latitude: c.lat, longitude: c.lng }}
-          title={c.name}
-          pinColor={visited.has(c.id) ? 'red' : withMedia.has(c.id) ? 'gold' : undefined}
-          onPress={() => onCityPress(c.id)}
+          key={m.id}
+          coordinate={{ latitude: m.lat, longitude: m.lng }}
+          title={m.title}
+          pinColor={m.color}
+          onPress={() => onCityPress(m.id)}
         />
       ))}
     </>
