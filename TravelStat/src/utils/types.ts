@@ -28,6 +28,33 @@ export interface Visit {
   budget_currency: string | null;
 }
 
+export type TransportMode = 'plane' | 'train' | 'bus' | 'car' | 'boat' | 'walk' | 'other';
+
+export const TRANSPORT_MODES: TransportMode[] = ['plane', 'train', 'bus', 'car', 'boat', 'walk', 'other'];
+
+export const TRANSPORT_ICON: Record<TransportMode, string> = {
+  plane: 'airplane',
+  train: 'train',
+  bus: 'bus',
+  car: 'car',
+  boat: 'ferry',
+  walk: 'walk',
+  other: 'help-circle-outline',
+};
+
+export interface VisitCity {
+  id: number;
+  visit_id: number;
+  city_id: number;
+  order_index: number;
+  transport: TransportMode | null;
+}
+
+export interface NewVisitCity {
+  city_id: number;
+  transport?: TransportMode;
+}
+
 export interface NewVisit {
   country_code: IsoCode;
   city_id?: CityId;
@@ -36,6 +63,7 @@ export interface NewVisit {
   notes?: string;
   budget?: number;
   budget_currency?: string;
+  cities?: NewVisitCity[];
 }
 
 export type MediaType = 'photo' | 'video';

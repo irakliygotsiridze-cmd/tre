@@ -46,3 +46,30 @@ describe('schema v1', () => {
     ).toThrow();
   });
 });
+
+describe('schema v2 (visit_cities + cities.wishlist)', () => {
+  let db: Database.Database;
+  const V2 = `
+    CREATE TABLE cities (id INTEGER PRIMARY KEY, visited INTEGER NOT NULL DEFAULT 0, wishlist INTEGER NOT NULL DEFAULT 0, visited_at TEXT);
+    CREATE TABLE visits (id INTEGER PRIMARY KEY AUTOINCREMENT, country_code TEXT NOT NULL, city_id INTEGER, start_date TEXT NOT NULL, end_date TEXT, notes TEXT, budget REAL, budget_currency TEXT);
+    CREATE TABLE visit_cities (id INTEGER PRIMARY KEY AUTOINCREMENT, visit_id INTEGER NOT NULL, city_id INTEGER NOT NULL, order_index INTEGER NOT NULL DEFAULT 0, transport TEXT);
+  `;
+  beforeEach(() => { db = new Database(':memory:'); db.exec(V2); });
+  afterEach(() => db.close());
+
+  it('inserts a city with wishlist=1', () => {
+    db.prepare(`INSERT INTO cities (id, wishlist) VALUES (?, 1)`).run(123);
+    const c = db.prepare(`SELECT * FROM cities WHERE id=?`).get(123) as any;
+    expect(c.wishlist).toBe(1);
+  });
+
+  it('inserts ordered visit_cities with transports', () => {
+    db.prepare(`INSERT INTO visits (country_code, start_date) VALUES ('MX', '2026-01-01')`).run();
+    const vId = (db.prepare(`SELECT id FROM visits`).get() as any).id;
+    db.prepare(`INSERT INTO visit_cities (visit_id, city_id, order_index, transport) VALUES (?,?,0,'plane')`).run(vId, 100);
+    db.prepare(`INSERT INTO visit_cities (visit_id, city_id, order_index, transport) VALUES (?,?,1,'train')`).run(vId, 200);
+    const rows = db.prepare(`SELECT * FROM visit_cities ORDER BY order_index`).all() as any[];
+    expect(rows.map(r => r.transport)).toEqual(['plane', 'train']);
+    expect(rows.map(r => r.city_id)).toEqual([100, 200]);
+  });
+});

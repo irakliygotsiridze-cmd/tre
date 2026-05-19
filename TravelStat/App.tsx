@@ -14,6 +14,7 @@ import { useVisitsStore } from '@/store/useVisitsStore';
 import { useMediaStore } from '@/store/useMediaStore';
 import { useAchievementsStore } from '@/store/useAchievementsStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
+import { useVisitCitiesStore } from '@/store/useVisitCitiesStore';
 
 export default function App() {
   const [ready, setReady] = useState(false);
@@ -30,6 +31,7 @@ export default function App() {
           useMediaStore.getState().loadFromDb(),
           useAchievementsStore.getState().loadFromDb(),
           useSettingsStore.getState().loadFromDb(),
+          useVisitCitiesStore.getState().loadFromDb(),
         ]);
         const byCity = useMediaStore.getState().byCity;
         useCitiesStore.getState().setWithMedia(new Set(byCity.keys()));

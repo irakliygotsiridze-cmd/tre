@@ -73,6 +73,40 @@ export async function runMigrations(): Promise<void> {
     await seedV1();
     await setSchemaVersion(1);
   }
+  if (v < 2) {
+    // ALTER may fail if column already exists (e.g. dev databases) — wrap in try/catch.
+    try {
+      await db.execAsync(`ALTER TABLE cities ADD COLUMN wishlist INTEGER NOT NULL DEFAULT 0;`);
+    } catch (e) {
+      // column likely already exists; ignore
+    }
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS visit_cities (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        visit_id INTEGER NOT NULL,
+        city_id INTEGER NOT NULL,
+        order_index INTEGER NOT NULL DEFAULT 0,
+        transport TEXT
+      );
+      CREATE INDEX IF NOT EXISTS idx_visit_cities_visit ON visit_cities(visit_id);
+    `);
+    // Backfill: for old visits with city_id set but no visit_cities rows, insert a single-row entry
+    const oldVisits = await db.getAllAsync<{ id: number; city_id: number | null }>(
+      `SELECT id, city_id FROM visits WHERE city_id IS NOT NULL;`
+    );
+    for (const visit of oldVisits) {
+      const existing = await db.getFirstAsync<{ c: number }>(
+        `SELECT COUNT(*) as c FROM visit_cities WHERE visit_id=?;`, visit.id
+      );
+      if (!existing || existing.c === 0) {
+        await db.runAsync(
+          `INSERT INTO visit_cities (visit_id, city_id, order_index, transport) VALUES (?,?,0,NULL);`,
+          visit.id, visit.city_id!
+        );
+      }
+    }
+    await setSchemaVersion(2);
+  }
 }
 
 async function seedV1(): Promise<void> {
