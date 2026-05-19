@@ -1,6 +1,7 @@
 import { useCountriesStore } from '@/store/useCountriesStore';
 import { useCitiesStore } from '@/store/useCitiesStore';
 import { useVisitsStore } from '@/store/useVisitsStore';
+import { useVisitCitiesStore } from '@/store/useVisitCitiesStore';
 import { useMediaStore } from '@/store/useMediaStore';
 import { useAchievementsStore } from '@/store/useAchievementsStore';
 import type { IsoCode, CityId, NewVisit } from '@/utils/types';
@@ -44,11 +45,21 @@ export async function markCityVisited(id: CityId): Promise<string[]> {
 }
 
 export async function recordVisit(input: NewVisit): Promise<string[]> {
-  await useVisitsStore.getState().addVisit(input);
+  const visit = await useVisitsStore.getState().addVisit(input);
   if (!useCountriesStore.getState().visited.has(input.country_code)) {
     await useCountriesStore.getState().toggleVisited(input.country_code);
   }
-  if (input.city_id && !useCitiesStore.getState().visited.has(input.city_id)) {
+  // Persist visit_cities if provided
+  if (input.cities && input.cities.length > 0) {
+    await useVisitCitiesStore.getState().setForVisit(visit.id, input.cities);
+    // Mark each city as visited (and through markCityVisited, its country too)
+    const ci = useCitiesStore.getState();
+    for (const vc of input.cities) {
+      if (!ci.visited.has(vc.city_id)) {
+        await ci.toggleVisited(vc.city_id);
+      }
+    }
+  } else if (input.city_id && !useCitiesStore.getState().visited.has(input.city_id)) {
     await useCitiesStore.getState().toggleVisited(input.city_id);
   }
   return evaluateAchievements();
